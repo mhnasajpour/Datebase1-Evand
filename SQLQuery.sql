@@ -142,3 +142,44 @@ create table Star(
 	foreign key ("user_id") REFERENCES "User"("user_id"),
 	foreign key (event_id) REFERENCES Event(event_id)
 );
+
+
+insert into Category(title) values('Educational')
+insert into Category(title) values('Sports')
+
+insert into Member(email, password, phone_number, thumbnail) values('mhnasajpour@gmail.com', 'dfg64f', '09134596626', '/images/pic1')
+insert into Member(email, password, phone_number, thumbnail) values('danny@gmail.com', 'ikjhgb666', '09135649685', '/images/pic2')
+insert into Member(email, password, phone_number) values('melika@gmail.com', 'jhgf7d6sa54', '09387860245')
+insert into Member(email, password, phone_number, thumbnail) values('shayan@gmail.com', 'fdytjdfg898', '09107860245', '/images/pic3')
+insert into Member(email, password, phone_number) values('hellohackers@gmail.com', 'abcf767454', '09387860245')
+insert into Member(email, password, phone_number, thumbnail) values('aicup@gmail.com', 'ikqb0086', '09453671085', '/images/pic4')
+
+insert into Organizer(organizer_id, name) values (3, 'Isfahan university of technology')
+insert into Organizer(organizer_id, name) values (4, 'Sepahan')
+
+insert into "User"("user_id", first_name, last_name) values(1, 'Mohammad', 'Nasajpour')
+insert into "User"("user_id", first_name, last_name) values(2, 'Danial', 'Khorasanizadeh')
+
+insert into Event(event_id, category, organizer_id, name, type, price) values(5, 'Educational', 3, 'Hello Hackers', 'Non-attendance', 100000)
+insert into Event(event_id, category, organizer_id, name, type, price) values(6, 'Educational', 3, 'AICup', 'Attendance', 200000)
+
+insert into Social_media(member_id, name, link) values(1, 'Telegram', '@mhnasajpour')
+insert into Social_media(member_id, name, link) values(3, 'Linkedin', 'linkedin.com/in/fotoohi/')
+
+insert into Message(member_id, text, is_seen) values(1, 'Welome to Evand', 1)
+insert into Message(member_id, text, is_seen) values(2, 'How can i help you?', 0)
+
+insert into Discount(code, event_id, "percent") values ('6s7d8f5', 5, 50)
+insert into Discount(code, event_id, "percent", exp_date) values ('uihngbd', 5, 85, DATEADD(day, 7, GETDATE()))
+
+insert into Staff("user_id", event_id, roll, is_admin) values (1, 6, 'HR', 0)
+insert into Staff("user_id", event_id, roll, is_admin) values (2, 5, 'CTO', 1)
+
+insert into Ticket(serial_number, "user_id", event_id, discount_code, payment) values ('avnkewrj', 1, 5, '6s7d8f5', 50000)
+insert into Ticket(serial_number, "user_id", event_id, payment) values ('utjfkoif', 2, 6, 200000)
+
+insert into Comment("user_id", event_id, text, is_enabled) values (1, 5, 'It was very good', 1)
+insert into Comment("user_id", event_id, text, is_enabled) values (2, 5, 'What was this shit', 0)
+
+insert into Star("user_id", event_id, rate) values (1, 5, 4.5)
+insert into Star("user_id", event_id, rate) values (2, 5, 1)

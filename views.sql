@@ -1,3 +1,32 @@
+create or alter view participant
+as
+select serial_number,
+	"user_id",
+	base.event_id,
+	organizer_id,
+	first_name,
+	last_name,
+	name,
+	purchase_time,
+	payment,
+	isnull(discount."percent", 0) as discount
+from (select serial_number,
+		"user"."user_id",
+		event.event_id,
+		event.organizer_id,
+		first_name,
+		last_name,
+		event.name,
+		ticket.date_created as purchase_time,
+		payment,
+		ticket.discount_code
+	from "user", ticket, event
+	where "user".user_id = ticket.user_id and
+		ticket.event_id = event.event_id
+		) as base left join discount 
+		on base.discount_code = discount.code
+
+
 create or alter view best_events
 as
 select *,

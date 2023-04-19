@@ -67,7 +67,7 @@ create table Event(
 
 create table Social_media(
 	member_id		int,
-	name			nvarchar(50),
+	name			nvarchar(10) check(name in ('Website', 'Linkedin', 'Telegram', 'Instagram', 'WhatsApp', 'Twitter', 'Skype', 'Facebook', 'Github')),
 	link			nvarchar(100) not null,
 	date_created	datetime default getdate(),
 	date_updated	datetime default getdate(),

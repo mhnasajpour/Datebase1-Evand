@@ -27,6 +27,27 @@ from (select serial_number,
 		on base.discount_code = discount.code
 
 
+create or alter view discount_status
+as
+select discount.code,
+	event.event_id,
+	event.name,
+	event.category,
+	organizer.organizer_id,
+	organizer.name as organize_name,
+	event.exp_registration,
+	discount."percent" as discount_percent,
+	event.price,
+	price * (100 - discount."percent") / 100 as final_cost,
+	discount.date_created as create_date,
+	discount.exp_date as expire_date,
+	(select count(discount_code) from ticket where discount_code = discount.code) as number_of_used
+from discount, event, ticket, organizer
+where discount.event_id = event.event_id and
+	event.event_id = ticket.event_id and
+	event.organizer_id = organizer.organizer_id
+
+
 create or alter view best_events
 as
 select *,

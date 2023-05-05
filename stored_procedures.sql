@@ -49,3 +49,39 @@ EXEC CreateEvent 'Educational', 'Isfahan university of technology', 'AICup', 100
 EXEC SendMessageToAll 'AICup is coming soon'
 
 
+GO
+CREATE PROCEDURE CreateDiscount
+	@percent int,
+	@event_name nvarchar(50),
+	@expire_date datetime
+AS
+BEGIN
+	SET NOCOUNT ON;
+	DECLARE @event int = (SELECT event_id FROM dbo.Event WHERE name = @event_name) 
+	IF @event is null
+	BEGIN 
+		RAISERROR('Event not found!', 16, 1)
+		RETURN
+	END
+
+	DECLARE @discount decimal(2, 0) = (100 - @percent)/100
+	IF GETDATE() > @expire_date
+	BEGIN
+		RAISERROR('expiraion date not valid!', 16, 1)
+		RETURN
+	END
+
+	--generate random code
+	DECLARE @random_code varchar(8)
+	SELECT @random_code = coalesce(@random_code, '') +CHAR(
+	CASE WHEN r between 0 and 9 THEN 48
+	WHEN r between 10 and 35 THEN 55
+	ELSE 61 END + r)
+	FROM master..spt_values CROSS JOIN (SELECT CAST(RAND(ABS(CHECKSUM(NEWID()))) *61 as int) r) a
+	WHERE type = 'P' AND number < 8
+
+	INSERT INTO dbo.Discount (code, event_id, dbo.Discount."percent", exp_date) VALUES (@random_code, @event, @percent, @expire_date)
+END
+GO
+
+EXEC CreateDiscount  @event_name = N'AICup', @percent = 20, @expire_date = '2025-05-10 23:59:59'

@@ -45,19 +45,19 @@ BEGIN
     INSERT INTO dbo.Event(event_id, category, organizer_id, name, price, place, type, description, exp_registration) VALUES(@organizer, @category, @organizer, @name, @price, @place, @type, @description, @exp_registration)
 END
 GO
-EXEC CreateEvent 'Educational', 'Isfahan university of technology', 'AICup', 100, 'Isfahan university of technology', 'Both', 'An AI competition', '2023-12-12 00:00:00'
+EXEC CreateEvent 'Educational', 'Isfahan university of technology', 'RoboIUT', 100, 'Isfahan university of technology', 'Both', 'An Robotic competition', '2023-12-12 00:00:00'
 EXEC SendMessageToAll 'AICup is coming soon'
 
 
 GO
 CREATE PROCEDURE CreateDiscount
 	@percent int,
-	@event_name nvarchar(50),
+	@eventID int,
 	@expire_date datetime
 AS
 BEGIN
 	SET NOCOUNT ON;
-	DECLARE @event int = (SELECT event_id FROM dbo.Event WHERE name = @event_name) 
+	DECLARE @event int = (SELECT event_id FROM dbo.Event WHERE event_id = @eventID) 
 	IF @event is null
 	BEGIN 
 		RAISERROR('Event not found!', 16, 1)
@@ -84,4 +84,4 @@ BEGIN
 END
 GO
 
-EXEC CreateDiscount  @event_name = N'AICup', @percent = 20, @expire_date = '2025-05-10 23:59:59'
+EXEC CreateDiscount  @eventID = 6, @percent = 20, @expire_date = '2025-05-10 23:59:59'

@@ -8,7 +8,7 @@ select serial_number,
 	last_name,
 	name,
 	purchase_time,
-	payment,
+	(100 - isnull(discount."percent", 0)) * price / 100 as payment,
 	isnull(discount."percent", 0) as discount
 from (select serial_number,
 		"user"."user_id",
@@ -17,8 +17,8 @@ from (select serial_number,
 		first_name,
 		last_name,
 		event.name,
+		event.price,
 		ticket.date_created as purchase_time,
-		payment,
 		ticket.discount_code
 	from "user", ticket, event
 	where "user".user_id = ticket.user_id and
@@ -67,7 +67,7 @@ from (select *,
 			event.exp_registration,
 			event.description,
 			(select count(ticket.serial_number) from event as t, ticket where event.event_id = t.event_id and t.event_id = ticket.event_id) as tickets,
-			(select sum(ticket.payment) from event as t, ticket where event.event_id = t.event_id and t.event_id = ticket.event_id) as sales,
+			(select sum(s.price * (100 - isnull(discount."percent", 0)) / 100) from(select price, discount_code from event as t, ticket where event.event_id = t.event_id and t.event_id = ticket.event_id) as s left join discount on s.discount_code = discount.code) as sales,
 			(select count(staff.user_id) from event as t, staff where event.event_id = t.event_id and t.event_id = staff.event_id) as staffs,
 			(select avg(star.rate) from event as t, star where event.event_id = t.event_id and t.event_id = star.event_id) as stars,
 			(select count(comment.comment_id) from event as t, comment where event.event_id = t.event_id and t.event_id = comment.event_id) as comments

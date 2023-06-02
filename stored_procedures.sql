@@ -16,7 +16,14 @@ BEGIN
     DEALLOCATE member_cursor
 END
 GO
+EXEC SendMessageToAll 'AICup is coming soon'
+
+
 CREATE PROCEDURE CreateEvent
+	@email nvarchar(50) = null,
+	@password varchar(50) = null,
+	@phone_number varchar(50) = null,
+	@thumbnail varchar(50) = null,
     @category_title varchar(50) = null,
     @organizer_name varchar(50) = null,
     @name varchar(50) = null,
@@ -30,34 +37,36 @@ BEGIN
     SET NOCOUNT ON;
     DECLARE @organizer int
     DECLARE @category varchar(50)
-    SELECT @organizer = organizer_id FROM dbo.Organizer WHERE name = @organizer_name
+    DECLARE @event_id int	
+    SELECT @organizer = organizer_id FROM dbo.organizer WHERE name = @organizer_name
     IF @organizer IS NULL
     BEGIN
         RAISERROR('Organizer not found', 16, 1)
         RETURN
     END
-    SELECT @category = title FROM dbo.Category WHERE title = @category_title
+    SELECT @category = title FROM dbo.category WHERE title = @category_title
     IF @category IS NULL
     BEGIN
         RAISERROR('Category not found', 16, 1)
         RETURN
     END
-    INSERT INTO dbo.Event(event_id, category, organizer_id, name, price, place, type, description, exp_registration) VALUES(@organizer, @category, @organizer, @name, @price, @place, @type, @description, @exp_registration)
+	INSERT INTO dbo.member(email, password, phone_number, thumbnail) VALUES(@email, @password, @phone_number, @thumbnail)
+	SELECT @event_id = member_id FROM dbo.member WHERE email = @email and password = @password
+    INSERT INTO dbo.Event(event_id, category, organizer_id, name, price, place, type, description, exp_registration) VALUES(@event_id, @category, @organizer, @name, @price, @place, @type, @description, @exp_registration)
 END
 GO
-EXEC CreateEvent 'Educational', 'Isfahan university of technology', 'AICup', 100, 'Isfahan university of technology', 'Both', 'An AI competition', '2023-12-12 00:00:00'
-EXEC SendMessageToAll 'AICup is coming soon'
+EXEC CreateEvent 'robo@iut.ac.ir', 'cd8vs6g743d', null, null, 'Educational', 'Isfahan university of technology', 'RoboIUT', 100000, 'Isfahan university of technology', 'Both', 'An Robotic competition', '2023-12-12 00:00:00'
 
 
 GO
 CREATE PROCEDURE CreateDiscount
 	@percent int,
-	@event_name nvarchar(50),
+	@eventID int,
 	@expire_date datetime
 AS
 BEGIN
 	SET NOCOUNT ON;
-	DECLARE @event int = (SELECT event_id FROM dbo.Event WHERE name = @event_name) 
+	DECLARE @event int = (SELECT event_id FROM dbo.Event WHERE event_id = @eventID) 
 	IF @event is null
 	BEGIN 
 		RAISERROR('Event not found!', 16, 1)
@@ -83,5 +92,4 @@ BEGIN
 	INSERT INTO dbo.Discount (code, event_id, dbo.Discount."percent", exp_date) VALUES (@random_code, @event, @percent, @expire_date)
 END
 GO
-
-EXEC CreateDiscount  @event_name = N'AICup', @percent = 20, @expire_date = '2025-05-10 23:59:59'
+EXEC CreateDiscount  @eventID = 6, @percent = 20, @expire_date = '2025-05-10 23:59:59'

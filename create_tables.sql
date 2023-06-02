@@ -112,7 +112,6 @@ create table Ticket(
 	"user_id"		int not null,
 	event_id		int not null,
 	discount_code	nvarchar(20) null,
-	payment			decimal(12, 3) null check(payment >= 0),
 	date_created	datetime default getdate(),
 	date_updated	datetime default getdate(),
 	foreign key ("user_id") REFERENCES "User"("user_id"),
@@ -175,8 +174,8 @@ insert into Discount(code, event_id, "percent", exp_date) values ('uihngbd', 5, 
 insert into Staff("user_id", event_id, roll, is_admin) values (1, 6, 'HR', 0);
 insert into Staff("user_id", event_id, roll, is_admin) values (2, 5, 'CTO', 1);
 
-insert into Ticket(serial_number, "user_id", event_id, discount_code, payment) values ('avnkewrj', 1, 5, '6s7d8f5', 50000);
-insert into Ticket(serial_number, "user_id", event_id, payment) values ('utjfkoif', 2, 6, 200000);
+insert into Ticket(serial_number, "user_id", event_id, discount_code) values ('avnkewrj', 1, 5, '6s7d8f5');
+insert into Ticket(serial_number, "user_id", event_id) values ('utjfkoif', 2, 6);
 
 insert into Comment("user_id", event_id, text, is_enabled) values (1, 5, 'It was very good', 1);
 insert into Comment("user_id", event_id, text, is_enabled) values (2, 5, 'What was this shit', 0);

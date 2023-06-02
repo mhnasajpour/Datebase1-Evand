@@ -1,53 +1,62 @@
-IF OBJECT_ID (N'dbo.CheckTicket', N'IF') IS NOT NULL
-	DROP FUNCTION CheckTicket;
+IF Object_id (N'dbo.CheckTicket', N'IF') IS NOT NULL 
+	DROP FUNCTION CHECKTICKET;
 GO
-CREATE FUNCTION dbo.CheckTicket(@userID int, @event_name nvarchar(50))
-RETURNS TABLE
-AS
-RETURN (
-	SELECT t.serial_number as "Valid Serial Number", u.user_id as "ID", e.name as "Event"
-	FROM dbo.Event e, dbo."User" u, dbo.Ticket t
-	WHERE @userID = t.user_id
-	AND @event_name = e.name
-	AND t.user_id = u.user_id
-	AND t.event_id = e.event_id
-)
-SELECT * FROM dbo.CheckTicket(2, 'AICup')
+CREATE OR ALTER FUNCTION DBO.CHECKTICKET(@USERID INT, @EVENT_NAME NVARCHAR(50))
+RETURNS TABLE AS
+RETURN
+(
+       SELECT T.SERIAL_NUMBER AS "VALID SERIAL NUMBER",
+              U.USER_ID       AS "ID",
+              E.NAME          AS "EVENT"
+       FROM   DBO.EVENT E,
+              DBO."USER" U,
+              DBO.TICKET T
+       WHERE  @USERID = T.USER_ID
+       AND    @EVENT_NAME = E.NAME
+       AND    T.USER_ID = U.USER_ID
+       AND    T.EVENT_ID = E.EVENT_ID )
+
+SELECT * FROM DBO.CHECKTICKET(2, 'AICup')
 
 
-IF OBJECT_ID (N'dbo.GetAtendeeCount', N'FN') IS NOT NULL
-	DROP FUNCTION GetAtendeeCount;
+IF OBJECT_ID (N'dbo.GetAtendeeCount', N'FN') IS NOT NULL 
+	DROP FUNCTION GETATENDEECOUNT;
 GO
-CREATE FUNCTION dbo.GetAtendeeCount(@event_name nvarchar(50))
-RETURNS int
-AS
+CREATE OR ALTER FUNCTION DBO.GETATENDEECOUNT(@EVENT_NAME NVARCHAR(50))
+RETURNS INT AS
 BEGIN
-	DECLARE @ret int;
-	SELECT @ret = COUNT(u.user_id)
-	FROM dbo."User" u, dbo.Ticket t, dbo.Event e
-	WHERE @event_name = e.name
-		AND u.user_id = t.user_id 
-		AND t.event_id = e.event_id
-	RETURN @ret;
+  DECLARE @RET INT;
+  SELECT @RET = Count(U.USER_ID)
+  FROM   DBO."USER" U,
+         DBO.TICKET T,
+         DBO.EVENT E
+  WHERE  @EVENT_NAME = E.NAME
+  AND    U.USER_ID = T.USER_ID
+  AND    T.EVENT_ID = E.EVENT_ID
+  RETURN @RET;
 END;
-GO
-SELECT dbo.GetAtendeeCount('AICup') as "AtendeeCount"
+SELECT DBO.GETATENDEECOUNT('AICup') AS "AtendeeCount"
 
 
-IF OBJECT_ID (N'dbo.GetSimilarEvents', N'IF') IS NOT NULL
-	DROP FUNCTION GetSimilarEvents;
+IF Object_id (N'dbo.GetSimilarEvents', N'IF') IS NOT NULL 
+	DROP FUNCTION GETSIMILAREVENTS;
 GO
-CREATE FUNCTION dbo.GetSimilarEvents(@event_name nvarchar(50))
-RETURNS TABLE
-AS
-RETURN (
-	SELECT e.event_id as "ID", e.name as "Similar Event", o.name as "Organizer"
-	FROM dbo.Event e, dbo.Category c, dbo.Organizer o,
-		( SELECT * FROM dbo.Event ) as all_events
-	WHERE e.category = c.title
-		AND e.category = all_events.category
-		AND o.organizer_id = e.organizer_id
-		AND e.name != @event_name
-)
-GO
-SELECT Distinct * FROM dbo.GetSimilarEvents('Hello Hackers')
+CREATE OR ALTER FUNCTION DBO.GETSIMILAREVENTS(@EVENT_NAME NVARCHAR(50))
+RETURNS TABLE AS
+RETURN
+(
+       SELECT E.EVENT_ID AS "ID",
+              E.NAME     AS "Similar Event",
+              O.NAME     AS "Organizer"
+       FROM   DBO.EVENT E,
+              DBO.CATEGORY C,
+              DBO.ORGANIZER O,
+              (
+                     SELECT *
+                     FROM   DBO.EVENT ) AS ALL_EVENTS
+       WHERE  E.CATEGORY = C.TITLE
+       AND    E.CATEGORY = ALL_EVENTS.CATEGORY
+       AND    O.ORGANIZER_ID = E.ORGANIZER_ID
+       AND    E.NAME != @EVENT_NAME )
+
+SELECT DISTINCT * FROM DBO.GETSIMILAREVENTS('Hello Hackers')

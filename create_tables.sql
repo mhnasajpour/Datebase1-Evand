@@ -11,174 +11,255 @@
 --drop table Member
 --drop table Category
 
-create table Category(
-	title			nvarchar(50) primary key,
-	description		nvarchar(500) null,
-	date_created	datetime default getdate(),
-	date_updated	datetime default getdate()
-);
 
-create table Member(
-	member_id		int identity(1,1) primary key,
-	email			varchar(50) unique not null check(email like '%@%.%'),
-	password		varchar(50) not null,
-	phone_number	varchar(11) null check(phone_number like '09%' and len(phone_number) = 11),
-	thumbnail		nvarchar(MAX) null,
-	date_created	datetime default getdate(),
-	date_updated	datetime default getdate()
-);
+CREATE TABLE CATEGORY
+  (
+     TITLE NVARCHAR(50) PRIMARY KEY,
+     DESCRIPTION NVARCHAR(500) NULL,
+     DATE_CREATED DATETIME DEFAULT Getdate(),
+     DATE_UPDATED DATETIME DEFAULT Getdate()
+  );
 
-create table Organizer(
-	organizer_id	int primary key,
-	name			nvarchar(50) unique not null,
-	description		nvarchar(500) null,
-	date_created	datetime default getdate(),
-	date_updated	datetime default getdate(),
-	foreign key (organizer_id) REFERENCES Member(member_id)
-);
+CREATE TABLE MEMBER
+  (
+     MEMBER_ID INT IDENTITY(1, 1) PRIMARY KEY,
+     EMAIL VARCHAR(50) UNIQUE NOT NULL CHECK(EMAIL LIKE '%@%.%'),
+     PASSWORD VARCHAR(50) NOT NULL,
+     PHONE_NUMBER VARCHAR(11) NULL CHECK(PHONE_NUMBER LIKE '09%' AND Len(PHONE_NUMBER) = 11),
+     THUMBNAIL NVARCHAR(MAX) NULL,
+     DATE_CREATED DATETIME DEFAULT Getdate(),
+     DATE_UPDATED DATETIME DEFAULT Getdate()
+  );
 
-create table "User"(
-	"user_id"		int primary key,
-	first_name		nvarchar(50) not null,
-	last_name		nvarchar(50) not null,
-	birth_date		date null check(birth_date < getdate()),
-	province		nvarchar(50) null,
-	date_created	datetime default getdate(),
-	date_updated	datetime default getdate(),
-	foreign key ("user_id") REFERENCES Member(member_id)
-);
+CREATE TABLE ORGANIZER
+  (
+     ORGANIZER_ID INT PRIMARY KEY,
+     NAME NVARCHAR(50) UNIQUE NOT NULL,
+     DESCRIPTION NVARCHAR(500) NULL,
+     DATE_CREATED DATETIME DEFAULT Getdate(),
+     DATE_UPDATED DATETIME DEFAULT Getdate(),
+     FOREIGN KEY (ORGANIZER_ID) REFERENCES MEMBER(MEMBER_ID)
+  );
 
-create table Event(
-	event_id			int primary key,
-	category			nvarchar(50) null,
-	organizer_id		int not null,
-	name				nvarchar(50) not null,
-	price				decimal(12, 3) null check(price >= 0),
-	place				nvarchar(50) null,			
-	type				nvarchar(15) not null check(type in ('Attendance', 'Non-Attendance', 'Both')),
-	description			nvarchar(500) null,
-	exp_registration	datetime null,
-	date_created	datetime default getdate(),
-	date_updated	datetime default getdate(),
-	foreign key (event_id) REFERENCES Member(member_id),
-	foreign key (category) REFERENCES Category(title),
-	foreign key (organizer_id) REFERENCES Organizer(organizer_id)
-);
+CREATE TABLE "USER"
+  (
+     "USER_ID" INT PRIMARY KEY,
+     FIRST_NAME NVARCHAR(50) NOT NULL,
+     LAST_NAME NVARCHAR(50) NOT NULL,
+     BIRTH_DATE DATE NULL CHECK(BIRTH_DATE < Getdate()),
+     PROVINCE NVARCHAR(50) NULL,
+     DATE_CREATED DATETIME DEFAULT Getdate(),
+     DATE_UPDATED DATETIME DEFAULT Getdate(),
+     FOREIGN KEY ("USER_ID") REFERENCES MEMBER(MEMBER_ID)
+  );
 
-create table Social_media(
-	member_id		int,
-	name			nvarchar(10) check(name in ('Website', 'Linkedin', 'Telegram', 'Instagram', 'WhatsApp', 'Twitter', 'Skype', 'Facebook', 'Github')),
-	link			nvarchar(100) not null,
-	date_created	datetime default getdate(),
-	date_updated	datetime default getdate(),
-	primary key (member_id, name),
-	foreign key (member_id) REFERENCES Member(member_id)
-);
+CREATE TABLE EVENT
+  (
+     EVENT_ID INT PRIMARY KEY,
+     CATEGORY NVARCHAR(50) NULL,
+     ORGANIZER_ID INT NOT NULL,
+     NAME NVARCHAR(50) NOT NULL,
+     PRICE DECIMAL(12, 3) NULL CHECK(PRICE >= 0),
+     PLACE NVARCHAR(50) NULL,
+     TYPE NVARCHAR(15) NOT NULL CHECK(TYPE IN ('Attendance', 'Non-Attendance', 'Both')),
+     DESCRIPTION NVARCHAR(500) NULL,
+     EXP_REGISTRATION DATETIME NULL,
+     DATE_CREATED DATETIME DEFAULT Getdate(),
+     DATE_UPDATED DATETIME DEFAULT Getdate(),
+     FOREIGN KEY (EVENT_ID) REFERENCES MEMBER(MEMBER_ID),
+     FOREIGN KEY (CATEGORY) REFERENCES CATEGORY(TITLE),
+     FOREIGN KEY (ORGANIZER_ID) REFERENCES ORGANIZER(ORGANIZER_ID)
+  );
 
-create table Message(
-	message_id		int identity(1,1) primary key,
-	member_id		int not null,
-	text			nvarchar(500) not null,
-	is_seen			bit not null,
-	date_created	datetime default getdate(),
-	date_updated	datetime default getdate(),
-	foreign key (member_id) REFERENCES Member(member_id)
-);
+CREATE TABLE SOCIAL_MEDIA
+  (
+     MEMBER_ID INT,NAME NVARCHAR(10) CHECK(NAME IN ('Website', 'Linkedin', 'Telegram', 'Instagram', 'WhatsApp', 'Twitter', 'Skype', 'Facebook', 'Github')),
+     LINK NVARCHAR(100) NOT NULL,
+     DATE_CREATED DATETIME DEFAULT Getdate(),
+     DATE_UPDATED DATETIME DEFAULT Getdate(),
+     PRIMARY KEY (MEMBER_ID, NAME),
+     FOREIGN KEY (MEMBER_ID) REFERENCES MEMBER(MEMBER_ID)
+  );
 
-create table Discount(
-	code			nvarchar(20) primary key,
-	event_id		int not null,
-	"percent"		decimal(2, 0) not null check("percent" >= 0),
-	exp_date		datetime null,
-	date_created	datetime default getdate(),
-	date_updated	datetime default getdate(),
-	foreign key (event_id) REFERENCES Event(event_id)
-);
+CREATE TABLE MESSAGE
+  (
+     MESSAGE_ID INT IDENTITY(1, 1) PRIMARY KEY,
+     MEMBER_ID INT NOT NULL,
+     TEXT NVARCHAR(500) NOT NULL,
+     IS_SEEN BIT NOT NULL,
+     DATE_CREATED DATETIME DEFAULT Getdate(),
+     DATE_UPDATED DATETIME DEFAULT Getdate(),
+     FOREIGN KEY (MEMBER_ID) REFERENCES MEMBER(MEMBER_ID)
+  );
 
-create table Staff(
-	"user_id"		int,
-	event_id		int,
-	roll			nvarchar(50) null,
-	is_admin		bit not null,
-	date_created	datetime default getdate(),
-	date_updated	datetime default getdate(),
-	primary key ("user_id", event_id),
-	foreign key ("user_id") REFERENCES "User"("user_id"),
-	foreign key (event_id) REFERENCES Event(event_id)
-);
+CREATE TABLE DISCOUNT
+  (
+     CODE NVARCHAR(20) PRIMARY KEY,
+     EVENT_ID INT NOT NULL,
+     "PERCENT" DECIMAL(2, 0) NOT NULL CHECK("PERCENT" >= 0),
+     EXP_DATE DATETIME NULL,
+     DATE_CREATED DATETIME DEFAULT Getdate(),
+     DATE_UPDATED DATETIME DEFAULT Getdate(),
+     FOREIGN KEY (EVENT_ID) REFERENCES EVENT(EVENT_ID)
+  );
 
-create table Ticket(
-	serial_number	nvarchar(20) primary key,
-	"user_id"		int not null,
-	event_id		int not null,
-	discount_code	nvarchar(20) null,
-	date_created	datetime default getdate(),
-	date_updated	datetime default getdate(),
-	foreign key ("user_id") REFERENCES "User"("user_id"),
-	foreign key (event_id) REFERENCES Event(event_id),
-	foreign key (discount_code) REFERENCES Discount(code)
-);
+CREATE TABLE STAFF
+  (
+     "USER_ID" INT,
+     EVENT_ID INT,
+     ROLL NVARCHAR(50) NULL,
+     IS_ADMIN BIT NOT NULL,
+     DATE_CREATED DATETIME DEFAULT Getdate(),
+     DATE_UPDATED DATETIME DEFAULT Getdate(),
+     PRIMARY KEY ("USER_ID", EVENT_ID),
+     FOREIGN KEY ("USER_ID") REFERENCES "USER"("USER_ID"),
+     FOREIGN KEY (EVENT_ID) REFERENCES EVENT(EVENT_ID)
+  );
 
-create table Comment(
-	comment_id		int identity(1,1) primary key,
-	"user_id"		int not null,
-	event_id		int not null,
-	text			nvarchar(500) not null,
-	is_enabled		bit not null,
-	date_created	datetime default getdate(),
-	date_updated	datetime default getdate(),
-	foreign key ("user_id") REFERENCES "User"("user_id"),
-	foreign key (event_id) REFERENCES Event(event_id)
-);
+CREATE TABLE TICKET
+  (
+     SERIAL_NUMBER NVARCHAR(20) PRIMARY KEY,
+     "USER_ID" INT NOT NULL,
+     EVENT_ID INT NOT NULL,
+     DISCOUNT_CODE NVARCHAR(20) NULL,
+     DATE_CREATED DATETIME DEFAULT Getdate(),
+     DATE_UPDATED DATETIME DEFAULT Getdate(),
+     FOREIGN KEY ("USER_ID") REFERENCES "USER"("USER_ID"),
+     FOREIGN KEY (EVENT_ID) REFERENCES EVENT(EVENT_ID),
+     FOREIGN KEY (DISCOUNT_CODE) REFERENCES DISCOUNT(CODE)
+  );
 
-create table Star(
-	"user_id"		int,
-	event_id		int,
-	rate			decimal(2, 1) not null check(rate between 0 and 5),
-	date_created	datetime default getdate(),
-	date_updated	datetime default getdate(),
-	primary key ("user_id", event_id),
-	foreign key ("user_id") REFERENCES "User"("user_id"),
-	foreign key (event_id) REFERENCES Event(event_id)
-);
+CREATE TABLE COMMENT
+  (
+     COMMENT_ID INT IDENTITY(1, 1) PRIMARY KEY,
+     "USER_ID" INT NOT NULL,
+	 EVENT_ID INT NOT NULL,
+     TEXT NVARCHAR(500) NOT NULL,
+     IS_ENABLED BIT NOT NULL,
+     DATE_CREATED DATETIME DEFAULT Getdate(),
+     DATE_UPDATED DATETIME DEFAULT Getdate(),
+     FOREIGN KEY ("USER_ID") REFERENCES "USER"("USER_ID"),
+     FOREIGN KEY (EVENT_ID) REFERENCES EVENT(EVENT_ID)
+  );
 
+CREATE TABLE STAR
+  (
+     "USER_ID" INT,EVENT_ID INT,RATE DECIMAL(2, 1) NOT NULL CHECK(RATE BETWEEN 0 AND 5),
+     DATE_CREATED DATETIME DEFAULT Getdate(),
+     DATE_UPDATED DATETIME DEFAULT Getdate(),
+     PRIMARY KEY ("USER_ID", EVENT_ID),
+     FOREIGN KEY ("USER_ID") REFERENCES "USER"("USER_ID"),
+     FOREIGN KEY (EVENT_ID) REFERENCES EVENT(EVENT_ID)
+  );
 
-insert into Category(title) values('Educational');
-insert into Category(title) values('Sports');
+INSERT INTO CATEGORY
+            (TITLE)
+VALUES      ('Educational');
 
-insert into Member(email, password, phone_number, thumbnail) values('mhnasajpour@gmail.com', 'dfg64f', '09134596626', '/images/pic1');
-insert into Member(email, password, phone_number, thumbnail) values('danny@gmail.com', 'ikjhgb666', '09135649685', '/images/pic2');
-insert into Member(email, password, phone_number) values('melika@gmail.com', 'jhgf7d6sa54', '09107826623');
-insert into Member(email, password, phone_number, thumbnail) values('shayan@gmail.com', 'fdytjdfg898', '09107860245', '/images/pic3');
-insert into Member(email, password, phone_number) values('hellohackers@gmail.com', 'abcf767454', '09387860245');
-insert into Member(email, password, phone_number, thumbnail) values('aicup@gmail.com', 'ikqb0086', '09453671085', '/images/pic4');
+INSERT INTO CATEGORY
+            (TITLE)
+VALUES      ('Sports');
 
-insert into Organizer(organizer_id, name) values (3, 'Isfahan university of technology');
-insert into Organizer(organizer_id, name) values (4, 'Sepahan');
+INSERT INTO MEMBER
+            (EMAIL,PASSWORD,PHONE_NUMBER,THUMBNAIL)
+VALUES      ('mhnasajpour@gmail.com','dfg64f','09134596626','/images/pic1');
 
-insert into "User"("user_id", first_name, last_name, birth_date) values(1, 'Mohammad', 'Nasajpour', '2002-03-27');
-insert into "User"("user_id", first_name, last_name) values(2, 'Danial', 'Khorasanizadeh');
+INSERT INTO MEMBER
+            (EMAIL,PASSWORD,PHONE_NUMBER,THUMBNAIL)
+VALUES      ('danny@gmail.com','ikjhgb666','09135649685','/images/pic2');
 
-insert into Event(event_id, category, organizer_id, name, type, price) values(5, 'Educational', 3, 'Hello Hackers', 'Non-Attendance', 100000);
-insert into Event(event_id, category, organizer_id, name, type, price) values(6, 'Educational', 3, 'AICup', 'Attendance', 200000);
+INSERT INTO MEMBER
+            (EMAIL,PASSWORD,PHONE_NUMBER)
+VALUES      ('melika@gmail.com','jhgf7d6sa54','09107826623');
 
-insert into Social_media(member_id, name, link) values(1, 'Telegram', '@mhnasajpour');
-insert into Social_media(member_id, name, link) values(3, 'Linkedin', 'linkedin.com/in/fotoohi/');
+INSERT INTO MEMBER
+            (EMAIL,PASSWORD,PHONE_NUMBER,THUMBNAIL)
+VALUES      ('shayan@gmail.com','fdytjdfg898','09107860245','/images/pic3');
 
-insert into Message(member_id, text, is_seen) values(1, 'Welome to Evand', 1);
-insert into Message(member_id, text, is_seen) values(2, 'How can i help you?', 0);
+INSERT INTO MEMBER
+            (EMAIL,PASSWORD,PHONE_NUMBER)
+VALUES      ('hellohackers@gmail.com','abcf767454','09387860245');
 
-insert into Discount(code, event_id, "percent") values ('6s7d8f5', 5, 50);
-insert into Discount(code, event_id, "percent", exp_date) values ('uihngbd', 5, 85, DATEADD(day, 7, GETDATE()));
+INSERT INTO MEMBER
+            (EMAIL,PASSWORD,PHONE_NUMBER,THUMBNAIL)
+VALUES      ('aicup@gmail.com','ikqb0086','09453671085','/images/pic4');
 
-insert into Staff("user_id", event_id, roll, is_admin) values (1, 6, 'HR', 0);
-insert into Staff("user_id", event_id, roll, is_admin) values (2, 5, 'CTO', 1);
+INSERT INTO ORGANIZER
+            (ORGANIZER_ID,NAME)
+VALUES      (3,'Isfahan university of technology');
 
-insert into Ticket(serial_number, "user_id", event_id, discount_code) values ('avnkewrj', 1, 5, '6s7d8f5');
-insert into Ticket(serial_number, "user_id", event_id) values ('utjfkoif', 2, 6);
+INSERT INTO ORGANIZER
+            (ORGANIZER_ID,NAME)
+VALUES      (4,'Sepahan');
 
-insert into Comment("user_id", event_id, text, is_enabled) values (1, 5, 'It was very good', 1);
-insert into Comment("user_id", event_id, text, is_enabled) values (2, 5, 'What was this shit', 0);
+INSERT INTO "USER"
+            ("USER_ID",FIRST_NAME,LAST_NAME,BIRTH_DATE)
+VALUES      (1,'Mohammad','Nasajpour','2002-03-27');
 
-insert into Star("user_id", event_id, rate) values (1, 5, 4.5);
-insert into Star("user_id", event_id, rate) values (2, 5, 1);
+INSERT INTO "USER"
+            ("USER_ID",FIRST_NAME,LAST_NAME)
+VALUES      (2,'Danial','Khorasanizadeh');
+
+INSERT INTO EVENT
+            (EVENT_ID,CATEGORY,ORGANIZER_ID,NAME,TYPE,PRICE)
+VALUES      (5,'Educational',3,'Hello Hackers','Non-Attendance',100000);
+
+INSERT INTO EVENT
+            (EVENT_ID,CATEGORY,ORGANIZER_ID,NAME,TYPE,PRICE)
+VALUES      (6,'Educational',3,'AICup','Attendance',200000);
+
+INSERT INTO SOCIAL_MEDIA
+            (MEMBER_ID,NAME,LINK)
+VALUES      (1,'Telegram','@mhnasajpour');
+
+INSERT INTO SOCIAL_MEDIA
+            (MEMBER_ID,NAME,LINK)
+VALUES      (3,'Linkedin','linkedin.com/in/fotoohi/');
+
+INSERT INTO MESSAGE
+            (MEMBER_ID,TEXT,IS_SEEN)
+VALUES      (1,'Welome to Evand',1);
+
+INSERT INTO MESSAGE
+            (MEMBER_ID,TEXT,IS_SEEN)
+VALUES      (2,'How can i help you?',0);
+
+INSERT INTO DISCOUNT
+            (CODE,EVENT_ID,"PERCENT")
+VALUES      ('6s7d8f5',5,50);
+
+INSERT INTO DISCOUNT
+            (CODE,EVENT_ID,"PERCENT",EXP_DATE)
+VALUES      ('uihngbd',5,85,Dateadd(DAY, 7, Getdate()));
+
+INSERT INTO STAFF
+            ("USER_ID",EVENT_ID,ROLL,IS_ADMIN)
+VALUES      (1,6,'HR',0);
+
+INSERT INTO STAFF
+            ("USER_ID",EVENT_ID,ROLL,IS_ADMIN)
+VALUES      (2,5,'CTO',1);
+
+INSERT INTO TICKET
+            (SERIAL_NUMBER,"USER_ID",EVENT_ID,DISCOUNT_CODE)
+VALUES      ('avnkewrj',1,5,'6s7d8f5');
+
+INSERT INTO TICKET
+            (SERIAL_NUMBER,"USER_ID",EVENT_ID)
+VALUES      ('utjfkoif',2,6);
+
+INSERT INTO COMMENT
+            ("USER_ID",EVENT_ID,TEXT,IS_ENABLED)
+VALUES      (1,5,'It was very good',1);
+
+INSERT INTO COMMENT
+            ("USER_ID",EVENT_ID,TEXT,IS_ENABLED)
+VALUES      (2,5,'What was this shit',0);
+
+INSERT INTO STAR
+            ("USER_ID",EVENT_ID,RATE)
+VALUES      (1,5,4.5);
+
+INSERT INTO STAR
+            ("USER_ID",EVENT_ID,RATE)
+VALUES      (2,5,1); 

@@ -1,116 +1,151 @@
-CREATE PROCEDURE SendMessageToAll @message varchar(255) = null AS BEGIN
-SET NOCOUNT ON;
-DECLARE @ID int
-DECLARE member_cursor CURSOR FOR
-SELECT member_id
-FROM dbo.Member OPEN member_cursor FETCH NEXT
-FROM member_cursor INTO @ID WHILE @@FETCH_STATUS = 0 BEGIN
-INSERT INTO dbo.Message(member_id, text, is_seen)
-VALUES(@ID, @message, 0);
-FETCH NEXT
-FROM member_cursor INTO @ID
-END CLOSE member_cursor DEALLOCATE member_cursor
-END
-GO EXEC SendMessageToAll 'AICup is coming soon' CREATE PROCEDURE CreateEvent @email nvarchar(50) = null,
-    @password varchar(50) = null,
-    @phone_number varchar(50) = null,
-    @thumbnail varchar(50) = null,
-    @category_title varchar(50) = null,
-    @organizer_name varchar(50) = null,
-    @name varchar(50) = null,
-    @price decimal(12, 3) = null,
-    @place varchar(50) = null,
-    @type varchar(15) = null,
-    @description varchar(500) = null,
-    @exp_registration datetime = null AS BEGIN
-SET NOCOUNT ON;
-DECLARE @organizer int
-DECLARE @category varchar(50)
-DECLARE @event_id int
-SELECT @organizer = organizer_id
-FROM dbo.organizer
-WHERE name = @organizer_name IF @organizer IS NULL BEGIN RAISERROR('Organizer not found', 16, 1) RETURN
-END
-SELECT @category = title
-FROM dbo.category
-WHERE title = @category_title IF @category IS NULL BEGIN RAISERROR('Category not found', 16, 1) RETURN
-END
-INSERT INTO dbo.member(email, password, phone_number, thumbnail)
-VALUES(@email, @password, @phone_number, @thumbnail)
-SELECT @event_id = member_id
-FROM dbo.member
-WHERE email = @email
-    and password = @password
-INSERT INTO dbo.Event(
-        event_id,
-        category,
-        organizer_id,
-        name,
-        price,
-        place,
-        type,
-        description,
-        exp_registration
-    )
-VALUES(
-        @event_id,
-        @category,
-        @organizer,
-        @name,
-        @price,
-        @place,
-        @type,
-        @description,
-        @exp_registration
-    )
-END
-GO EXEC CreateEvent 'robo@iut.ac.ir',
-    'cd8vs6g743d',
-    null,
-    null,
-    'Educational',
-    'Isfahan university of technology',
-    'RoboIUT',
-    100000,
-    'Isfahan university of technology',
-    'Both',
-    'An Robotic competition',
-    '2023-12-12 00:00:00'
-GO CREATE PROCEDURE CreateDiscount @percent int,
-    @eventID int,
-    @eventID int,
-    @expire_date datetime AS BEGIN
-SET NOCOUNT ON;
-DECLARE @event int = (
-        SELECT event_id
-        FROM dbo.Event
-        WHERE event_id = @eventID
-    )
-DECLARE @event int = (
-        SELECT event_id
-        FROM dbo.Event
-        WHERE event_id = @eventID
-    ) IF @event is null BEGIN RAISERROR('Event not found!', 16, 1) RETURN
-END
-DECLARE @discount decimal(2, 0) = (100 - @percent) / 100 IF GETDATE() > @expire_date BEGIN RAISERROR('expiraion date not valid!', 16, 1) RETURN
-END --generate random code
-DECLARE @random_code varchar(8)
-SELECT @random_code = coalesce(@random_code, '') + CHAR(
-        CASE
-            WHEN r between 0 and 9 THEN 48
-            WHEN r between 10 and 35 THEN 55
-            ELSE 61
-        END + r
-    )
-FROM master..spt_values
-    CROSS JOIN (
-        SELECT CAST(RAND(ABS(CHECKSUM(NEWID()))) * 61 as int) r
-    ) a
-WHERE type = 'P'
-    AND number < 8
-INSERT INTO dbo.Discount (code, event_id, dbo.Discount."percent", exp_date)
-VALUES (@random_code, @event, @percent, @expire_date)
-END
-GO EXEC CreateDiscount @eventID = 6,
-    @percent = 20,
-    @expire_date = '2025-05-10 23:59:59'
+CREATE OR ALTER PROCEDURE SENDMESSAGETOALL 
+	@MESSAGE VARCHAR(255) = NULL
+AS
+  BEGIN
+      SET NOCOUNT ON;
+
+      DECLARE @ID INT
+      DECLARE MEMBER_CURSOR CURSOR FOR
+        SELECT MEMBER_ID
+        FROM   DBO.MEMBER
+
+      OPEN MEMBER_CURSOR
+      FETCH NEXT FROM MEMBER_CURSOR INTO @ID
+  
+      WHILE @@FETCH_STATUS = 0
+        BEGIN
+            INSERT INTO DBO.MESSAGE
+                        (MEMBER_ID,TEXT,IS_SEEN)
+            VALUES      (@ID,@MESSAGE,0);
+
+            FETCH NEXT FROM MEMBER_CURSOR INTO @ID
+        END
+
+      CLOSE MEMBER_CURSOR
+      DEALLOCATE MEMBER_CURSOR
+  END
+GO
+EXEC SENDMESSAGETOALL 'AICup is coming soon'
+
+
+CREATE OR ALTER PROCEDURE CREATEEVENT 
+	@EMAIL NVARCHAR(50) = NULL,
+	@PASSWORD VARCHAR(50) = NULL,
+	@PHONE_NUMBER VARCHAR(50) = NULL,
+	@THUMBNAIL VARCHAR(50) = NULL,
+	@CATEGORY_TITLE VARCHAR(50) = NULL,
+	@ORGANIZER_NAME VARCHAR(50) = NULL,
+	@NAME VARCHAR(50) = NULL,
+	@PRICE DECIMAL(12, 3) = NULL,
+	@PLACE VARCHAR(50) = NULL,
+	@TYPE VARCHAR(15) = NULL,
+	@DESCRIPTION VARCHAR(500) = NULL,
+	@EXP_REGISTRATION DATETIME = NULL
+AS
+  BEGIN
+      SET NOCOUNT ON;
+
+      DECLARE @ORGANIZER INT
+      DECLARE @CATEGORY VARCHAR(50)
+      DECLARE @EVENT_ID INT
+
+      SELECT @ORGANIZER = ORGANIZER_ID
+      FROM   DBO.ORGANIZER
+      WHERE  NAME = @ORGANIZER_NAME
+
+      IF @ORGANIZER IS NULL
+        BEGIN
+            RAISERROR('Organizer not found',16,1)
+            RETURN
+        END
+
+      SELECT @CATEGORY = TITLE
+      FROM   DBO.CATEGORY
+      WHERE  TITLE = @CATEGORY_TITLE
+
+      IF @CATEGORY IS NULL
+        BEGIN
+            RAISERROR('Category not found',16,1)
+            RETURN
+        END
+
+      INSERT INTO DBO.MEMBER
+                  (EMAIL,PASSWORD,PHONE_NUMBER,THUMBNAIL)
+      VALUES      (@EMAIL,@PASSWORD,@PHONE_NUMBER,@THUMBNAIL)
+
+      SELECT @EVENT_ID = MEMBER_ID
+      FROM   DBO.MEMBER
+      WHERE  EMAIL = @EMAIL
+             AND PASSWORD = @PASSWORD
+
+      INSERT INTO DBO.EVENT
+                  (EVENT_ID,CATEGORY,ORGANIZER_ID,NAME,PRICE,PLACE,TYPE,
+                   DESCRIPTION,
+                   EXP_REGISTRATION)
+      VALUES      (@EVENT_ID,@CATEGORY,@ORGANIZER,@NAME,@PRICE,@PLACE,@TYPE,
+                   @DESCRIPTION,
+                   @EXP_REGISTRATION )
+  END
+GO
+EXEC CREATEEVENT
+  'robo@iut.ac.ir',
+  'cd8vs6g743d',
+  NULL,
+  NULL,
+  'Educational',
+  'Isfahan university of technology',
+  'RoboIUT',
+  100000,
+  'Isfahan university of technology',
+  'Both',
+  'An Robotic competition',
+  '2023-12-12 00:00:00'
+
+
+CREATE OR ALTER PROCEDURE CREATEDISCOUNT 
+	@PERCENT INT,
+	@EVENT_NAME NVARCHAR(50),
+	@EXPIRE_DATE DATETIME
+AS
+  BEGIN
+      SET NOCOUNT ON;
+
+      DECLARE @EVENT INT = (SELECT EVENT_ID
+         FROM   DBO.EVENT
+         WHERE  NAME = @EVENT_NAME)
+
+      IF @EVENT IS NULL
+        BEGIN
+            RAISERROR('Event not found!',16,1)
+            RETURN
+        END
+
+      DECLARE @DISCOUNT DECIMAL(2, 0) = ( 100 - @PERCENT ) / 100
+
+      IF Getdate() > @EXPIRE_DATE
+        BEGIN
+            RAISERROR('expiraion date not valid!',16,1)
+            RETURN
+        END
+
+      --generate random code
+      DECLARE @RANDOM_CODE VARCHAR(8)
+      SELECT @RANDOM_CODE = COALESCE(@RANDOM_CODE, '') + Char( CASE WHEN R
+                            BETWEEN
+                            0 AND 9
+                                   THEN 48 WHEN R
+                                   BETWEEN 10 AND 35 THEN 55 ELSE 61 END + R)
+      FROM   MASTER..SPT_VALUES
+             CROSS JOIN (SELECT Cast(Rand(Abs(Checksum(Newid()))) * 61 AS INT) r) A
+      WHERE  TYPE = 'P'
+             AND NUMBER < 8
+
+      INSERT INTO DBO.DISCOUNT
+                  (CODE,EVENT_ID,DBO.DISCOUNT."PERCENT",EXP_DATE)
+      VALUES      (@RANDOM_CODE,@EVENT,@PERCENT,@EXPIRE_DATE)
+  END
+GO
+EXEC CREATEDISCOUNT
+  @EVENT_NAME = N'AICup',
+  @PERCENT = 20,
+  @EXPIRE_DATE = '2025-05-10 23:59:59' 

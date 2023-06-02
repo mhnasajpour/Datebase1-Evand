@@ -1,76 +1,116 @@
-create or alter view participant
-as
-select serial_number,
-	"user_id",
-	base.event_id,
-	organizer_id,
-	first_name,
-	last_name,
-	name,
-	purchase_time,
-	(100 - isnull(discount."percent", 0)) * price / 100 as payment,
-	isnull(discount."percent", 0) as discount
-from (select serial_number,
-		"user"."user_id",
-		event.event_id,
-		event.organizer_id,
-		first_name,
-		last_name,
-		event.name,
-		event.price,
-		ticket.date_created as purchase_time,
-		ticket.discount_code
-	from "user", ticket, event
-	where "user".user_id = ticket.user_id and
-		ticket.event_id = event.event_id
-		) as base left join discount 
-		on base.discount_code = discount.code
+CREATE OR ALTER VIEW PARTICIPANT AS
+SELECT    SERIAL_NUMBER,
+          "USER_ID",
+          BASE.EVENT_ID,
+          ORGANIZER_ID,
+          FIRST_NAME,
+          LAST_NAME,
+          NAME,
+          PURCHASE_TIME,
+          (100 - ISNULL(DISCOUNT."PERCENT", 0)) * PRICE / 100 AS PAYMENT,
+          ISNULL(DISCOUNT."PERCENT", 0)                       AS DISCOUNT
+FROM      (
+                 SELECT SERIAL_NUMBER,
+                        "USER"."USER_ID",
+                        EVENT.EVENT_ID,
+                        EVENT.ORGANIZER_ID,
+                        FIRST_NAME,
+                        LAST_NAME,
+                        EVENT.NAME,
+                        EVENT.PRICE,
+                        TICKET.DATE_CREATED AS PURCHASE_TIME,
+                        TICKET.DISCOUNT_CODE
+                 FROM   "USER",
+                        TICKET,
+                        EVENT
+                 WHERE  "USER".USER_ID = TICKET.USER_ID
+                 AND    TICKET.EVENT_ID = EVENT.EVENT_ID ) AS BASE
+LEFT JOIN DISCOUNT
+ON        BASE.DISCOUNT_CODE = DISCOUNT.CODE
 
 
-create or alter view discount_status
-as
-select discount.code,
-	event.event_id,
-	event.name,
-	event.category,
-	organizer.organizer_id,
-	organizer.name as organize_name,
-	event.exp_registration,
-	discount."percent" as discount_percent,
-	event.price,
-	price * (100 - discount."percent") / 100 as final_cost,
-	discount.date_created as create_date,
-	discount.exp_date as expire_date,
-	(select count(discount_code) from ticket where discount_code = discount.code) as number_of_used
-from discount, event, ticket, organizer
-where discount.event_id = event.event_id and
-	event.event_id = ticket.event_id and
-	event.organizer_id = organizer.organizer_id
+CREATE OR ALTER VIEW DISCOUNT_STATUS AS
+SELECT DISCOUNT.CODE,
+       EVENT.EVENT_ID,
+       EVENT.NAME,
+       EVENT.CATEGORY,
+       ORGANIZER.ORGANIZER_ID,
+       ORGANIZER.NAME AS ORGANIZE_NAME,
+       EVENT.EXP_REGISTRATION,
+       DISCOUNT."PERCENT" AS DISCOUNT_PERCENT,
+       EVENT.PRICE,
+       PRICE * (100 - DISCOUNT."PERCENT") / 100 AS FINAL_COST,
+       DISCOUNT.DATE_CREATED                    AS CREATE_DATE,
+       DISCOUNT.EXP_DATE                        AS EXPIRE_DATE,
+       (
+              SELECT Count(DISCOUNT_CODE)
+              FROM   TICKET
+              WHERE  DISCOUNT_CODE = DISCOUNT.CODE) AS NUMBER_OF_USED
+FROM   DISCOUNT,
+       EVENT,
+       TICKET,
+       ORGANIZER
+WHERE  DISCOUNT.EVENT_ID = EVENT.EVENT_ID
+AND    EVENT.EVENT_ID = TICKET.EVENT_ID
+AND    EVENT.ORGANIZER_ID = ORGANIZER.ORGANIZER_ID
 
 
-create or alter view best_events
-as
-select *,
-	rank() over(order by score desc) as rank
-from (select *,
-		(tickets * 10) + (isnull(sales, 0) / 20000) + (staffs * 10) + (isnull(stars, 2.5) * 100) + (comments * 20) as score
-	from (select event.event_id,
-			event.name,
-			event.category,
-			organizer.name as organizer,
-			member.email,
-			member.phone_number,
-			event.price,
-			event.place,
-			event.type,
-			member.thumbnail,
-			event.exp_registration,
-			event.description,
-			(select count(ticket.serial_number) from event as t, ticket where event.event_id = t.event_id and t.event_id = ticket.event_id) as tickets,
-			(select sum(s.price * (100 - isnull(discount."percent", 0)) / 100) from(select price, discount_code from event as t, ticket where event.event_id = t.event_id and t.event_id = ticket.event_id) as s left join discount on s.discount_code = discount.code) as sales,
-			(select count(staff.user_id) from event as t, staff where event.event_id = t.event_id and t.event_id = staff.event_id) as staffs,
-			(select avg(star.rate) from event as t, star where event.event_id = t.event_id and t.event_id = star.event_id) as stars,
-			(select count(comment.comment_id) from event as t, comment where event.event_id = t.event_id and t.event_id = comment.event_id) as comments
-		from event, member, organizer
-		where event.event_id = member.member_id and
-			event.organizer_id = organizer.organizer_id) as base) as score
+CREATE OR ALTER VIEW BEST_EVENTS AS
+SELECT   *,
+         RANK() OVER(ORDER BY SCORE DESC) AS rank
+FROM     (
+                SELECT *,
+                       (TICKETS * 10) + (ISNULL(SALES, 0) / 20000) + (STAFFS * 10) + (ISNULL(STARS, 2.5) * 100) + (COMMENTS * 20) AS score
+                FROM   (
+                              SELECT EVENT.EVENT_ID,
+                                     EVENT.NAME,
+                                     EVENT.CATEGORY,
+                                     ORGANIZER.NAME AS organizer,
+                                     MEMBER.EMAIL,
+                                     MEMBER.PHONE_NUMBER,
+                                     EVENT.PRICE,
+                                     EVENT.PLACE,
+                                     EVENT.TYPE,
+                                     MEMBER.THUMBNAIL,
+                                     EVENT.EXP_REGISTRATION,
+                                     EVENT.DESCRIPTION,
+                                     (
+                                            SELECT Count(TICKET.SERIAL_NUMBER)
+                                            FROM   EVENT AS T,
+                                                   TICKET
+                                            WHERE  EVENT.EVENT_ID = T.EVENT_ID
+                                            AND    T.EVENT_ID = TICKET.EVENT_ID) AS tickets,
+                                     (
+                                               SELECT    Sum(S.PRICE * (100 - ISNULL(DISCOUNT."PERCENT", 0)) / 100)
+                                               FROM     (
+                                                                SELECT PRICE,
+                                                                       DISCOUNT_CODE
+                                                                FROM   EVENT AS T,
+                                                                       TICKET
+                                                                WHERE  EVENT.EVENT_ID = T.EVENT_ID
+                                                                AND    T.EVENT_ID = TICKET.EVENT_ID) AS S
+                                               LEFT JOIN DISCOUNT
+                                               ON        S.DISCOUNT_CODE = DISCOUNT.CODE) AS sales,
+                                     (
+                                            SELECT Count(STAFF.USER_ID)
+                                            FROM   EVENT AS T,
+                                                   STAFF
+                                            WHERE  EVENT.EVENT_ID = T.EVENT_ID
+                                            AND    T.EVENT_ID = STAFF.EVENT_ID) AS staffs,
+                                     (
+                                            SELECT Avg(STAR.RATE)
+                                            FROM   EVENT AS T,
+                                                   STAR
+                                            WHERE  EVENT.EVENT_ID = T.EVENT_ID
+                                            AND    T.EVENT_ID = STAR.EVENT_ID) AS stars,
+                                     (
+                                            SELECT Count(COMMENT.COMMENT_ID)
+                                            FROM   EVENT AS T,
+                                                   COMMENT
+                                            WHERE  EVENT.EVENT_ID = T.EVENT_ID
+                                            AND    T.EVENT_ID = COMMENT.EVENT_ID) AS comments
+                              FROM   EVENT,
+                                     MEMBER,
+                                     ORGANIZER
+                              WHERE  EVENT.EVENT_ID = MEMBER.MEMBER_ID
+                              AND    EVENT.ORGANIZER_ID = ORGANIZER.ORGANIZER_ID) AS BASE) AS SCORE

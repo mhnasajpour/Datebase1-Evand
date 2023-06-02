@@ -1,45 +1,69 @@
-CREATE TRIGGER CancelRegistrations
-ON Event
+CREATE TRIGGER CANCELREGISTRATIONS 
+ON EVENT
 AFTER DELETE
 AS
-BEGIN
-    DECLARE @ID int
-    DECLARE user_cursor CURSOR FOR SELECT "user_id" FROM dbo.Ticket WHERE event_id IN (SELECT event_id FROM deleted)
-    OPEN user_cursor
-    FETCH NEXT FROM user_cursor INTO @ID
-    WHILE @@FETCH_STATUS=0
-    BEGIN
-        INSERT INTO dbo.Message(member_id, text, is_seen) VALUES(@ID, 'The event you registered for is cancelled', 0);
-        FETCH NEXT FROM user_cursor INTO @ID
-    END
-    DELETE FROM Ticket WHERE event_id IN (SELECT event_id FROM deleted)
-END
+  BEGIN
+      DECLARE @ID INT
+      DECLARE USER_CURSOR CURSOR FOR
+        SELECT "USER_ID"
+        FROM   DBO.TICKET
+        WHERE  EVENT_ID IN (SELECT EVENT_ID
+                            FROM   DELETED)
+
+      OPEN USER_CURSOR
+      FETCH NEXT FROM USER_CURSOR INTO @ID
+
+      WHILE @@FETCH_STATUS = 0
+        BEGIN
+            INSERT INTO DBO.MESSAGE
+                        (MEMBER_ID,TEXT,IS_SEEN)
+            VALUES     (@ID,'The event you registered for is cancelled',0);
+
+            FETCH NEXT FROM USER_CURSOR INTO @ID
+        END
+
+      DELETE FROM TICKET
+      WHERE  EVENT_ID IN (SELECT EVENT_ID
+                          FROM   DELETED)
+  END
 GO
 
 
-CREATE TRIGGER NotifyStaff
-ON Comment
+CREATE TRIGGER NOTIFYSTAFF
+ON COMMENT
 AFTER INSERT
 AS
-BEGIN
-    DECLARE @ID int
-    DECLARE user_cursor CURSOR FOR SELECT "user_id" FROM dbo.Staff WHERE event_id IN (SELECT event_id FROM inserted)
-    OPEN user_cursor
-    FETCH NEXT FROM user_cursor INTO @ID
-    WHILE @@FETCH_STATUS=0
-    BEGIN
-        INSERT INTO dbo.Message(member_id, text, is_seen) VALUES(@ID, 'A comment has been posted on an event you are staff of', 0);
-        FETCH NEXT FROM user_cursor INTO @ID
-    END
-END
+  BEGIN
+      DECLARE @ID INT
+      DECLARE USER_CURSOR CURSOR FOR
+        SELECT "USER_ID"
+        FROM   DBO.STAFF
+        WHERE  EVENT_ID IN (SELECT EVENT_ID
+                            FROM   INSERTED)
+
+      OPEN USER_CURSOR
+      FETCH NEXT FROM USER_CURSOR INTO @ID
+
+      WHILE @@FETCH_STATUS = 0
+        BEGIN
+            INSERT INTO DBO.MESSAGE
+                        (MEMBER_ID,TEXT,IS_SEEN)
+            VALUES      (@ID,'A comment has been posted on an event you are staff of',0);
+
+            FETCH NEXT FROM USER_CURSOR INTO @ID
+        END
+  END
 GO
 
 
-CREATE TRIGGER UpdateDate
-ON Event
+CREATE TRIGGER UPDATEDATE
+ON EVENT
 AFTER UPDATE
 AS
-BEGIN
-    UPDATE Event SET date_updated = GETDATE() WHERE event_id IN (SELECT event_id FROM inserted)
-END
-GO
+  BEGIN
+      UPDATE EVENT
+      SET    DATE_UPDATED = Getdate()
+      WHERE  EVENT_ID IN (SELECT EVENT_ID
+                          FROM   INSERTED)
+  END
+GO 

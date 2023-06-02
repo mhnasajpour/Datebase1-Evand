@@ -15,6 +15,8 @@ BEGIN
     DELETE FROM Ticket WHERE event_id IN (SELECT event_id FROM deleted)
 END
 GO
+
+
 CREATE TRIGGER NotifyStaff
 ON Comment
 AFTER INSERT
@@ -31,6 +33,8 @@ BEGIN
     END
 END
 GO
+
+
 CREATE TRIGGER UpdateDate
 ON Event
 AFTER UPDATE
@@ -39,4 +43,3 @@ BEGIN
     UPDATE Event SET date_updated = GETDATE() WHERE event_id IN (SELECT event_id FROM inserted)
 END
 GO
-

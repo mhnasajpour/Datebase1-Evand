@@ -12,10 +12,7 @@ RETURN (
 	AND t.user_id = u.user_id
 	AND t.event_id = e.event_id
 )
-GO
-
 SELECT * FROM dbo.CheckTicket(2, 'AICup')
-
 
 
 IF OBJECT_ID (N'dbo.GetAtendeeCount', N'FN') IS NOT NULL
@@ -35,7 +32,6 @@ BEGIN
 END;
 GO
 SELECT dbo.GetAtendeeCount('AICup') as "AtendeeCount"
-
 
 
 IF OBJECT_ID (N'dbo.GetSimilarEvents', N'IF') IS NOT NULL
